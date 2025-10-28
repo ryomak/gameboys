@@ -770,21 +770,24 @@ func main() {
 	// ゲーム初期化
 	game := NewGame()
 
-	// 初期フレームバッファ
-	currentFrame := uint16(0)
+	// 最初はバッファ1を表示、バッファ0に描画
+	display.SetFrameBuffer(1)
 
 	// メインループ
 	for {
-		// バックバッファに描画
+		// バックバッファに描画（現在の描画先）
 		game.Draw()
 
-		// VBlank待機
+		// VBlank待機（画面の書き換えタイミング）
 		display.WaitForVBlank()
 
-		// ページフリップ（ちらつき防止）
-		graphics.FlipMode4()
-		currentFrame = 1 - currentFrame
-		display.SetFrameBuffer(currentFrame)
+		// 描画完了したバッファを表示に切り替え
+		// 描画先が0なら表示を0に、描画先が1なら表示を1に
+		displayBuffer := graphics.GetCurrentDrawBuffer()
+		display.SetFrameBuffer(displayBuffer)
+
+		// 次のフレームは逆のバッファに描画
+		graphics.SwapBuffers()
 
 		// 入力更新
 		keys.Update()

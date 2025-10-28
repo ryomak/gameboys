@@ -18,29 +18,26 @@ const (
 	PaletteRAM   = 0x05000000 // パレットRAM
 )
 
-// currentBackBuffer 現在の描画先バックバッファ（0 or 1）
-var currentBackBuffer uint16 = 0
+// currentDrawBuffer 現在の描画先バッファ（0 or 1）
+// 表示バッファは逆のバッファになる
+var currentDrawBuffer uint16 = 0
 
-// GetMode4BackBuffer 現在のバックバッファのアドレスを取得
+// GetMode4BackBuffer 現在のバックバッファ（描画先）のアドレスを取得
 func GetMode4BackBuffer() uintptr {
-	if currentBackBuffer == 0 {
+	if currentDrawBuffer == 0 {
 		return VRAM4Frame0
 	}
 	return VRAM4Frame1
 }
 
-// GetMode4FrontBuffer 現在の表示バッファのアドレスを取得
-func GetMode4FrontBuffer() uintptr {
-	if currentBackBuffer == 0 {
-		return VRAM4Frame1
-	}
-	return VRAM4Frame0
+// GetCurrentDrawBuffer 現在の描画先バッファ番号を取得（0 or 1）
+func GetCurrentDrawBuffer() uint16 {
+	return currentDrawBuffer
 }
 
-// FlipMode4 フレームバッファを切り替え（ページフリップ）
-func FlipMode4() {
-	// バックバッファとフロントバッファを入れ替え
-	currentBackBuffer = 1 - currentBackBuffer
+// SwapBuffers バッファを切り替える（内部状態のみ変更）
+func SwapBuffers() {
+	currentDrawBuffer = 1 - currentDrawBuffer
 }
 
 // SetMode4Pixel Mode 4でピクセルを設定（バックバッファに描画）
