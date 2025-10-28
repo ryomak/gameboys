@@ -1,7 +1,7 @@
 # GameBoy Advance Games - Root Makefile
 
 # ゲームディレクトリのリスト
-GAMES = demo
+GAMES = demo freethrow
 
 # デフォルトターゲット: すべてのゲームをビルド
 .PHONY: all
