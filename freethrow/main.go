@@ -184,11 +184,7 @@ func (g *Game) shoot() {
 	// power: 0-100 -> velocity: 500-1500 cm/s
 	velocityMag := 500 + (g.powerGauge.power * 10)
 
-	// 角度から速度ベクトルを計算
-	angleDeg := math.AngleToDeg(g.angle)
-	angleRad := math.NewFixedFloat(float64(angleDeg) * 0.0174533) // deg to rad
-
-	// 簡易的な三角関数計算
+	// 角度から速度ベクトルを計算（g.angleは0-255の角度）
 	vz := math.NewFixed(velocityMag).Mul(math.Cos(g.angle))
 	vy := math.NewFixed(velocityMag).Mul(math.Sin(g.angle))
 
