@@ -267,8 +267,8 @@ func (g *Game) updateResult(keys *input.KeyState) {
 
 // Draw ゲームを描画
 func (g *Game) Draw() {
-	// 背景をクリア
-	graphics.ClearScreen(graphics.ColorBlack)
+	// 背景をクリア（バックバッファに描画）
+	graphics.ClearMode4Screen(graphics.PalBlack)
 
 	// コートを描画
 	g.drawCourt()
@@ -290,23 +290,19 @@ func (g *Game) Draw() {
 
 // drawPlayerHands プレイヤーの手を描画
 func (g *Game) drawPlayerHands() {
-	// 肌色
-	skinColor := graphics.RGB(220, 180, 140)
-	darkSkinColor := graphics.RGB(180, 140, 100)
-
 	// 左手（画面左下）
 	leftHandX := 20
 	leftHandY := graphics.ScreenHeight - 30
 
 	// 左腕
-	graphics.FillRect(leftHandX, leftHandY, 25, 35, darkSkinColor)
-	graphics.FillRect(leftHandX+2, leftHandY+2, 21, 31, skinColor)
+	graphics.FillRectMode4(leftHandX, leftHandY, 25, 35, graphics.PalDarkSkin)
+	graphics.FillRectMode4(leftHandX+2, leftHandY+2, 21, 31, graphics.PalSkin)
 
 	// 左手の指
 	for i := 0; i < 4; i++ {
 		fingerX := leftHandX + 5 + i*5
 		fingerY := leftHandY + 30
-		graphics.FillRect(fingerX, fingerY, 3, 8, skinColor)
+		graphics.FillRectMode4(fingerX, fingerY, 3, 8, graphics.PalSkin)
 	}
 
 	// 右手（画面右下）- シュート準備の位置
@@ -314,26 +310,21 @@ func (g *Game) drawPlayerHands() {
 	rightHandY := graphics.ScreenHeight - 40
 
 	// 右腕
-	graphics.FillRect(rightHandX, rightHandY, 30, 40, darkSkinColor)
-	graphics.FillRect(rightHandX+2, rightHandY+2, 26, 36, skinColor)
+	graphics.FillRectMode4(rightHandX, rightHandY, 30, 40, graphics.PalDarkSkin)
+	graphics.FillRectMode4(rightHandX+2, rightHandY+2, 26, 36, graphics.PalSkin)
 
 	// 右手の指（開いた状態）
 	for i := 0; i < 5; i++ {
 		fingerX := rightHandX + 5 + i*5
 		fingerY := rightHandY + 35
-		graphics.FillRect(fingerX, fingerY, 3, 10, skinColor)
+		graphics.FillRectMode4(fingerX, fingerY, 3, 10, graphics.PalSkin)
 	}
 }
 
 // drawCourt コートを描画
 func (g *Game) drawCourt() {
 	// 背景（体育館の壁）- 上部は暗め
-	graphics.FillRect(0, 0, graphics.ScreenWidth, 60, graphics.RGB(30, 30, 50))
-
-	// 床（遠近感のある台形）
-	// 木目調の床色
-	floorColor := graphics.RGB(139, 90, 43)
-	lightFloorColor := graphics.RGB(160, 110, 60)
+	graphics.FillRectMode4(0, 0, graphics.ScreenWidth, 60, graphics.PalWall)
 
 	// 床を段階的に描画して遠近感を出す
 	for y := 90; y < graphics.ScreenHeight; y++ {
@@ -343,21 +334,21 @@ func (g *Game) drawCourt() {
 		startX := (graphics.ScreenWidth - width) / 2
 
 		// 交互に色を変えて木目風に
-		color := floorColor
+		colorIndex := uint8(graphics.PalFloor)
 		if (y/4)%2 == 0 {
-			color = lightFloorColor
+			colorIndex = uint8(graphics.PalLightFloor)
 		}
 
-		graphics.DrawLine(startX, y, startX+width, y, color)
+		graphics.DrawLineMode4(startX, y, startX+width, y, colorIndex)
 	}
 
 	// フリースローライン（白線）
-	graphics.DrawLine(80, 145, 160, 145, graphics.ColorWhite)
-	graphics.DrawLine(80, 146, 160, 146, graphics.ColorWhite)
+	graphics.DrawLineMode4(80, 145, 160, 145, graphics.PalWhite)
+	graphics.DrawLineMode4(80, 146, 160, 146, graphics.PalWhite)
 
 	// ペイントエリアの線
-	graphics.DrawLine(60, 140, 60, 155, graphics.ColorWhite)
-	graphics.DrawLine(180, 140, 180, 155, graphics.ColorWhite)
+	graphics.DrawLineMode4(60, 140, 60, 155, graphics.PalWhite)
+	graphics.DrawLineMode4(180, 140, 180, 155, graphics.PalWhite)
 }
 
 // drawBall ボールを描画（3D→2D変換）
@@ -382,56 +373,51 @@ func (g *Game) drawBall() {
 	radius := int(size / 2)
 
 	// バスケットボールを描画（グラデーションで立体感）
-	// 外側から内側に向かって描画
-	ballColor := graphics.RGB(255, 120, 0) // オレンジ
-	darkBallColor := graphics.RGB(200, 80, 0) // 暗いオレンジ
-	lightBallColor := graphics.RGB(255, 160, 60) // 明るいオレンジ
-
 	// 影の部分（下側）
 	for r := radius; r >= radius*2/3; r-- {
-		graphics.DrawCircle(int(result.ScreenX), int(result.ScreenY+1), r, darkBallColor)
+		graphics.DrawCircleMode4(int(result.ScreenX), int(result.ScreenY+1), r, graphics.PalDarkBall)
 	}
 
 	// メインの色
-	graphics.FillCircle(int(result.ScreenX), int(result.ScreenY), radius, ballColor)
+	graphics.FillCircleMode4(int(result.ScreenX), int(result.ScreenY), radius, graphics.PalBall)
 
 	// ハイライト（上側）
 	highlightRadius := radius / 3
 	if highlightRadius > 0 {
-		graphics.FillCircle(
+		graphics.FillCircleMode4(
 			int(result.ScreenX-int32(radius/4)),
 			int(result.ScreenY-int32(radius/4)),
 			highlightRadius,
-			lightBallColor,
+			graphics.PalLightBall,
 		)
 	}
 
 	// バスケットボールの線（黒いライン）
 	if radius >= 4 {
 		// 縦線
-		graphics.DrawLine(
+		graphics.DrawLineMode4(
 			int(result.ScreenX),
 			int(result.ScreenY-int32(radius)),
 			int(result.ScreenX),
 			int(result.ScreenY+int32(radius)),
-			graphics.ColorBlack,
+			graphics.PalBlack,
 		)
 		// 横線
-		graphics.DrawLine(
+		graphics.DrawLineMode4(
 			int(result.ScreenX-int32(radius)),
 			int(result.ScreenY),
 			int(result.ScreenX+int32(radius)),
 			int(result.ScreenY),
-			graphics.ColorBlack,
+			graphics.PalBlack,
 		)
 		// 斜め線
 		offset := int32(radius * 7 / 10)
-		graphics.DrawLine(
+		graphics.DrawLineMode4(
 			int(result.ScreenX-offset),
 			int(result.ScreenY-offset),
 			int(result.ScreenX+offset),
 			int(result.ScreenY+offset),
-			graphics.ColorBlack,
+			graphics.PalBlack,
 		)
 	}
 }
@@ -450,8 +436,8 @@ func (g *Game) drawGoal() {
 		boardHeight := backboardResult.Scale.Mul(math.NewFixed(45)).ToInt()
 
 		// バックボード（半透明の白）
-		backboardColor := graphics.RGB(200, 200, 200)
-		graphics.FillRect(
+		backboardColor := uint8(graphics.PalBackboard)
+		graphics.FillRectMode4(
 			int(backboardResult.ScreenX-boardWidth/2),
 			int(backboardResult.ScreenY-boardHeight/2),
 			int(boardWidth),
@@ -460,22 +446,22 @@ func (g *Game) drawGoal() {
 		)
 
 		// バックボードの枠（赤）
-		graphics.DrawRect(
+		graphics.DrawRectMode4(
 			int(backboardResult.ScreenX-boardWidth/2),
 			int(backboardResult.ScreenY-boardHeight/2),
 			int(boardWidth),
 			int(boardHeight),
-			graphics.ColorRed,
+			graphics.PalRed,
 		)
 
 		// 四角いターゲット（内側の四角）
 		targetSize := boardWidth / 3
-		graphics.DrawRect(
+		graphics.DrawRectMode4(
 			int(backboardResult.ScreenX-targetSize/2),
 			int(backboardResult.ScreenY-targetSize/4),
 			int(targetSize),
 			int(targetSize/2),
-			graphics.ColorRed,
+			graphics.PalRed,
 		)
 	}
 
@@ -493,11 +479,11 @@ func (g *Game) drawGoal() {
 	}
 
 	// リム（楕円で立体感）- オレンジ色
-	rimColor := graphics.RGB(255, 100, 0)
+	rimColor := uint8(graphics.PalRim)
 
 	// リムの外側
-	graphics.DrawCircle(int(result.ScreenX), int(result.ScreenY), int(goalSize/2+1), rimColor)
-	graphics.DrawCircle(int(result.ScreenX), int(result.ScreenY), int(goalSize/2), rimColor)
+	graphics.DrawCircleMode4(int(result.ScreenX), int(result.ScreenY), int(goalSize/2+1), rimColor)
+	graphics.DrawCircleMode4(int(result.ScreenX), int(result.ScreenY), int(goalSize/2), rimColor)
 
 	// ネットを描画（格子状）
 	netDepth := g.goal.pos.Z.Add(math.NewFixed(20))
@@ -508,12 +494,12 @@ func (g *Game) drawGoal() {
 
 		if netResult.Visible {
 			// 縦のネット線
-			graphics.DrawLine(
+			graphics.DrawLineMode4(
 				int(result.ScreenX+i*goalSize/5),
 				int(result.ScreenY),
 				int(netResult.ScreenX),
 				int(netResult.ScreenY),
-				graphics.ColorWhite,
+				graphics.PalWhite,
 			)
 		}
 	}
@@ -521,11 +507,11 @@ func (g *Game) drawGoal() {
 	// 横のネット線
 	for i := int32(0); i < 3; i++ {
 		offsetY := (i + 1) * goalSize / 4
-		graphics.DrawCircle(
+		graphics.DrawCircleMode4(
 			int(result.ScreenX),
 			int(result.ScreenY+offsetY),
 			int(goalSize/2-(goalSize/8)*i),
-			graphics.ColorWhite,
+			graphics.PalWhite,
 		)
 	}
 }
@@ -551,30 +537,30 @@ func (g *Game) drawUI() {
 // drawScore スコアを描画
 func (g *Game) drawScore() {
 	// スコアボード背景
-	graphics.FillRect(5, 5, 85, 20, graphics.RGB(40, 40, 60))
-	graphics.DrawRect(5, 5, 85, 20, graphics.ColorWhite)
+	graphics.FillRectMode4(5, 5, 85, 20, graphics.PalUIBG)
+	graphics.DrawRectMode4(5, 5, 85, 20, graphics.PalWhite)
 
 	// 成功数（緑の丸）
 	for i := int32(0); i < g.score && i < 10; i++ {
-		graphics.FillCircle(int(10+i*8), 12, 3, graphics.ColorGreen)
+		graphics.FillCircleMode4(int(10+i*8), 12, 3, graphics.PalGreen)
 	}
 
 	// 試投数の枠（グレー）
 	for i := int32(0); i < 10; i++ {
-		color := graphics.RGB(80, 80, 80)
+		color := uint8(graphics.PalDarkGray)
 		if i < g.attempts {
-			color = graphics.ColorGray
+			color = uint8(graphics.PalGray)
 		}
-		graphics.DrawCircle(int(10+i*8), 12, 3, color)
+		graphics.DrawCircleMode4(int(10+i*8), 12, 3, color)
 	}
 
 	// 連続成功数の表示
 	if g.consecutiveHits > 0 {
-		graphics.FillRect(95, 5, 40, 10, graphics.RGB(255, 200, 0))
-		graphics.DrawRect(95, 5, 40, 10, graphics.ColorYellow)
+		graphics.FillRectMode4(95, 5, 40, 10, graphics.PalGold)
+		graphics.DrawRectMode4(95, 5, 40, 10, graphics.PalYellow)
 		// "STREAK" 表示（簡易版）
 		for i := int32(0); i < g.consecutiveHits && i < 5; i++ {
-			graphics.FillRect(int(98+i*7), 8, 4, 4, graphics.ColorRed)
+			graphics.FillRectMode4(int(98+i*7), 8, 4, 4, graphics.PalRed)
 		}
 	}
 }
@@ -588,17 +574,17 @@ func (g *Game) drawReadyUI() {
 	msgY := 70
 
 	// 背景（半透明風）
-	graphics.FillRect(msgX, msgY, msgWidth, msgHeight, graphics.RGB(0, 0, 100))
-	graphics.DrawRect(msgX, msgY, msgWidth, msgHeight, graphics.ColorWhite)
-	graphics.DrawRect(msgX+1, msgY+1, msgWidth-2, msgHeight-2, graphics.ColorCyan)
+	graphics.FillRectMode4(msgX, msgY, msgWidth, msgHeight, graphics.PalBlueBG)
+	graphics.DrawRectMode4(msgX, msgY, msgWidth, msgHeight, graphics.PalWhite)
+	graphics.DrawRectMode4(msgX+1, msgY+1, msgWidth-2, msgHeight-2, graphics.PalCyan)
 
 	// "READY" 文字（ブロック表示）
-	graphics.FillRect(msgX+15, msgY+8, 30, 6, graphics.ColorYellow)
-	graphics.FillRect(msgX+50, msgY+8, 25, 6, graphics.ColorYellow)
-	graphics.FillRect(msgX+80, msgY+8, 25, 6, graphics.ColorYellow)
+	graphics.FillRectMode4(msgX+15, msgY+8, 30, 6, graphics.PalYellow)
+	graphics.FillRectMode4(msgX+50, msgY+8, 25, 6, graphics.PalYellow)
+	graphics.FillRectMode4(msgX+80, msgY+8, 25, 6, graphics.PalYellow)
 
 	// "Press A" 点滅風（フレームで切り替え）
-	graphics.FillRect(msgX+35, msgY+18, 50, 8, graphics.ColorGreen)
+	graphics.FillRectMode4(msgX+35, msgY+18, 50, 8, graphics.PalGreen)
 }
 
 // drawPowerGauge パワーゲージを描画
@@ -610,16 +596,16 @@ func (g *Game) drawPowerGauge() {
 	gaugeHeight := 100
 
 	// 外枠（影）
-	graphics.FillRect(gaugeX+2, gaugeY+2, gaugeWidth, gaugeHeight, graphics.RGB(30, 30, 30))
+	graphics.FillRectMode4(gaugeX+2, gaugeY+2, gaugeWidth, gaugeHeight, graphics.PalBlack)
 	// メイン枠
-	graphics.FillRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, graphics.RGB(60, 60, 60))
-	graphics.DrawRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, graphics.ColorWhite)
+	graphics.FillRectMode4(gaugeX, gaugeY, gaugeWidth, gaugeHeight, graphics.PalGaugeBG)
+	graphics.DrawRectMode4(gaugeX, gaugeY, gaugeWidth, gaugeHeight, graphics.PalWhite)
 
 	// 目盛り
 	for i := 0; i <= 4; i++ {
 		markY := gaugeY + (gaugeHeight * i / 4)
-		graphics.DrawLine(gaugeX, markY, gaugeX+4, markY, graphics.ColorWhite)
-		graphics.DrawLine(gaugeX+gaugeWidth-4, markY, gaugeX+gaugeWidth, markY, graphics.ColorWhite)
+		graphics.DrawLineMode4(gaugeX, markY, gaugeX+4, markY, graphics.PalWhite)
+		graphics.DrawLineMode4(gaugeX+gaugeWidth-4, markY, gaugeX+gaugeWidth, markY, graphics.PalWhite)
 	}
 
 	// ゲージの中身（グラデーション）
@@ -628,16 +614,16 @@ func (g *Game) drawPowerGauge() {
 		for i := 0; i < fillHeight; i++ {
 			// 下から上に向かって色が変わる（緑→黄→赤）
 			ratio := float64(i) / float64(gaugeHeight)
-			var color uint16
+			var color uint8
 			if ratio < 0.33 {
-				color = graphics.RGB(0, 255, 0) // 緑
+				color = graphics.PalGreen // 緑
 			} else if ratio < 0.66 {
-				color = graphics.RGB(255, 255, 0) // 黄
+				color = graphics.PalYellow // 黄
 			} else {
-				color = graphics.RGB(255, 0, 0) // 赤
+				color = graphics.PalRed // 赤
 			}
 
-			graphics.DrawLine(
+			graphics.DrawLineMode4(
 				gaugeX+2,
 				gaugeY+gaugeHeight-i,
 				gaugeX+gaugeWidth-2,
@@ -648,8 +634,8 @@ func (g *Game) drawPowerGauge() {
 	}
 
 	// "POWER" ラベル
-	graphics.FillRect(gaugeX-2, gaugeY-12, 24, 8, graphics.RGB(40, 40, 60))
-	graphics.DrawRect(gaugeX-2, gaugeY-12, 24, 8, graphics.ColorWhite)
+	graphics.FillRectMode4(gaugeX-2, gaugeY-12, 24, 8, graphics.PalUIBG)
+	graphics.DrawRectMode4(gaugeX-2, gaugeY-12, 24, 8, graphics.PalWhite)
 }
 
 // drawAngleIndicator 角度インジケーターを描画
@@ -663,15 +649,15 @@ func (g *Game) drawAngleIndicator() {
 	radius := int32(35)
 
 	// 背景円
-	graphics.FillCircle(centerX, centerY, int(radius+5), graphics.RGB(40, 40, 60))
-	graphics.DrawCircle(centerX, centerY, int(radius+5), graphics.ColorWhite)
+	graphics.FillCircleMode4(centerX, centerY, int(radius+5), graphics.PalUIBG)
+	graphics.DrawCircleMode4(centerX, centerY, int(radius+5), graphics.PalWhite)
 
 	// 角度の範囲を示す弧（30-80度）
 	for a := int32(MinAngle); a <= MaxAngle; a += 2 {
 		angle := math.DegToAngle(a)
 		x := centerX + int(math.Cos(angle).Mul(math.NewFixed(radius)).ToInt())
 		y := centerY - int(math.Sin(angle).Mul(math.NewFixed(radius)).ToInt())
-		graphics.DrawPixel(x, y, graphics.ColorGreen)
+		graphics.DrawPixelMode4(x, y, graphics.PalGreen)
 	}
 
 	// 現在の角度を示す線
@@ -680,37 +666,37 @@ func (g *Game) drawAngleIndicator() {
 	endY := centerY - int(math.Sin(g.angle).Mul(math.NewFixed(radius-5)).ToInt())
 
 	// 角度の針（太め）
-	graphics.DrawLine(centerX, centerY, endX, endY, graphics.ColorYellow)
-	graphics.DrawLine(centerX+1, centerY, endX+1, endY, graphics.ColorYellow)
-	graphics.DrawLine(centerX, centerY+1, endX, endY+1, graphics.ColorYellow)
+	graphics.DrawLineMode4(centerX, centerY, endX, endY, graphics.PalYellow)
+	graphics.DrawLineMode4(centerX+1, centerY, endX+1, endY, graphics.PalYellow)
+	graphics.DrawLineMode4(centerX, centerY+1, endX, endY+1, graphics.PalYellow)
 
 	// 中心点
-	graphics.FillCircle(centerX, centerY, 3, graphics.ColorRed)
+	graphics.FillCircleMode4(centerX, centerY, 3, graphics.PalRed)
 
 	// 最適角度（45度）を表示
 	optimalAngle := math.DegToAngle(45)
 	optX := centerX + int(math.Cos(optimalAngle).Mul(math.NewFixed(radius)).ToInt())
 	optY := centerY - int(math.Sin(optimalAngle).Mul(math.NewFixed(radius)).ToInt())
-	graphics.FillCircle(optX, optY, 2, graphics.RGB(0, 255, 0))
+	graphics.FillCircleMode4(optX, optY, 2, graphics.PalGreen)
 
 	// "ANGLE" ラベル
-	graphics.FillRect(centerX-20, centerY-50, 40, 8, graphics.RGB(40, 40, 60))
-	graphics.DrawRect(centerX-20, centerY-50, 40, 8, graphics.ColorWhite)
+	graphics.FillRectMode4(centerX-20, centerY-50, 40, 8, graphics.PalUIBG)
+	graphics.DrawRectMode4(centerX-20, centerY-50, 40, 8, graphics.PalWhite)
 
 	// 角度の数値表示（簡易版）
 	digitX := centerX - 10
 	digitY := centerY + 15
-	graphics.FillRect(digitX, digitY, 20, 10, graphics.ColorBlack)
-	graphics.DrawRect(digitX, digitY, 20, 10, graphics.ColorWhite)
+	graphics.FillRectMode4(digitX, digitY, 20, 10, graphics.PalBlack)
+	graphics.DrawRectMode4(digitX, digitY, 20, 10, graphics.PalWhite)
 
 	// 角度の10の位と1の位を簡易表示
 	tens := angleDeg / 10
 	ones := angleDeg % 10
 	for i := int32(0); i < tens && i < 9; i++ {
-		graphics.FillRect(digitX+2, digitY+2+int(i), 6, 1, graphics.ColorYellow)
+		graphics.FillRectMode4(digitX+2, digitY+2+int(i), 6, 1, graphics.PalYellow)
 	}
 	for i := int32(0); i < ones && i < 9; i++ {
-		graphics.FillRect(digitX+12, digitY+2+int(i), 6, 1, graphics.ColorYellow)
+		graphics.FillRectMode4(digitX+12, digitY+2+int(i), 6, 1, graphics.PalYellow)
 	}
 }
 
@@ -727,54 +713,56 @@ func (g *Game) drawResultUI() {
 	if lastSuccess {
 		// 成功！
 		// 背景（緑）
-		graphics.FillRect(msgX, msgY, msgWidth, msgHeight, graphics.RGB(0, 150, 0))
-		graphics.DrawRect(msgX, msgY, msgWidth, msgHeight, graphics.ColorWhite)
-		graphics.DrawRect(msgX+2, msgY+2, msgWidth-4, msgHeight-4, graphics.ColorYellow)
+		graphics.FillRectMode4(msgX, msgY, msgWidth, msgHeight, graphics.PalSuccessDark)
+		graphics.DrawRectMode4(msgX, msgY, msgWidth, msgHeight, graphics.PalWhite)
+		graphics.DrawRectMode4(msgX+2, msgY+2, msgWidth-4, msgHeight-4, graphics.PalYellow)
 
 		// "GOOD!" 文字風
-		graphics.FillRect(msgX+20, msgY+10, 100, 15, graphics.ColorYellow)
-		graphics.FillRect(msgX+25, msgY+12, 90, 11, graphics.RGB(0, 200, 0))
+		graphics.FillRectMode4(msgX+20, msgY+10, 100, 15, graphics.PalYellow)
+		graphics.FillRectMode4(msgX+25, msgY+12, 90, 11, graphics.PalSuccessLight)
 
 		// 星（装飾）
 		for i := 0; i < 5; i++ {
 			starX := msgX + 30 + i*20
 			starY := msgY + 30
-			graphics.FillRect(starX-2, starY, 5, 1, graphics.ColorYellow)
-			graphics.FillRect(starX, starY-2, 1, 5, graphics.ColorYellow)
+			graphics.FillRectMode4(starX-2, starY, 5, 1, graphics.PalYellow)
+			graphics.FillRectMode4(starX, starY-2, 1, 5, graphics.PalYellow)
 		}
 
 		// 連続成功ボーナス表示
 		if g.consecutiveHits >= 3 {
-			graphics.FillRect(msgX+30, msgY+35, 80, 10, graphics.RGB(255, 200, 0))
-			graphics.DrawRect(msgX+30, msgY+35, 80, 10, graphics.ColorRed)
+			graphics.FillRectMode4(msgX+30, msgY+35, 80, 10, graphics.PalGold)
+			graphics.DrawRectMode4(msgX+30, msgY+35, 80, 10, graphics.PalRed)
 		}
 	} else {
 		// 失敗...
 		// 背景（赤）
-		graphics.FillRect(msgX, msgY, msgWidth, msgHeight, graphics.RGB(150, 0, 0))
-		graphics.DrawRect(msgX, msgY, msgWidth, msgHeight, graphics.ColorWhite)
-		graphics.DrawRect(msgX+2, msgY+2, msgWidth-4, msgHeight-4, graphics.RGB(200, 100, 0))
+		graphics.FillRectMode4(msgX, msgY, msgWidth, msgHeight, graphics.PalFailDark)
+		graphics.DrawRectMode4(msgX, msgY, msgWidth, msgHeight, graphics.PalWhite)
+		graphics.DrawRectMode4(msgX+2, msgY+2, msgWidth-4, msgHeight-4, graphics.PalOrangeBG)
 
 		// "MISS" 文字風
-		graphics.FillRect(msgX+20, msgY+10, 100, 15, graphics.RGB(200, 0, 0))
-		graphics.FillRect(msgX+25, msgY+12, 90, 11, graphics.RGB(100, 0, 0))
+		graphics.FillRectMode4(msgX+20, msgY+10, 100, 15, graphics.PalRed)
+		graphics.FillRectMode4(msgX+25, msgY+12, 90, 11, graphics.PalFailDarker)
 
 		// X マーク
 		for i := 0; i < 20; i++ {
-			graphics.DrawPixel(msgX+40+i, msgY+25+i, graphics.ColorRed)
-			graphics.DrawPixel(msgX+60-i, msgY+25+i, graphics.ColorRed)
+			graphics.DrawPixelMode4(msgX+40+i, msgY+25+i, graphics.PalRed)
+			graphics.DrawPixelMode4(msgX+60-i, msgY+25+i, graphics.PalRed)
 		}
 	}
 
 	// "Press A to Continue"
-	graphics.FillRect(msgX+20, msgY+msgHeight+10, 100, 8, graphics.ColorBlue)
-	graphics.DrawRect(msgX+20, msgY+msgHeight+10, 100, 8, graphics.ColorWhite)
+	graphics.FillRectMode4(msgX+20, msgY+msgHeight+10, 100, 8, graphics.PalBlue)
+	graphics.DrawRectMode4(msgX+20, msgY+msgHeight+10, 100, 8, graphics.PalWhite)
 }
 
 func main() {
-	// ディスプレイ初期化
-	display.SetMode(display.Mode3)
-	display.EnableLayers(display.EnableBG2)
+	// ディスプレイ初期化（Mode 4: ダブルバッファリング対応）
+	display.SetMode(display.Mode4 | display.EnableBG2)
+
+	// パレット初期化
+	graphics.InitMode4Palette()
 
 	// 入力初期化
 	keys := input.NewKeyState()
@@ -782,10 +770,21 @@ func main() {
 	// ゲーム初期化
 	game := NewGame()
 
+	// 初期フレームバッファ
+	currentFrame := uint16(0)
+
 	// メインループ
 	for {
+		// バックバッファに描画
+		game.Draw()
+
 		// VBlank待機
 		display.WaitForVBlank()
+
+		// ページフリップ（ちらつき防止）
+		graphics.FlipMode4()
+		currentFrame = 1 - currentFrame
+		display.SetFrameBuffer(currentFrame)
 
 		// 入力更新
 		keys.Update()
@@ -797,8 +796,5 @@ func main() {
 
 		// 更新処理
 		game.Update(keys)
-
-		// 描画処理
-		game.Draw()
 	}
 }
